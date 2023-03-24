@@ -9,6 +9,7 @@ const bodyparser = require("body-parser");
 app.use(bodyparser.json());
 const cors = require("cors");
 app.use(cors());
+const Expense = require("./model/Expense");
 
 app.post("/user/signup", async (req, res, next) => {
   try {
@@ -35,17 +36,17 @@ app.post("/user/login", async (req, res, next) => {
     const { email, password } = req.body;
     User.findAll({ where: { email } }).then((user) => {
       if (user.length > 0) {
-        bcrypt.compare(password,user[0].password,(err,result)=>{
-          if(!err){
+        bcrypt.compare(password, user[0].password, (err, result) => {
+          if (!err) {
             res
-            .status(200)
-            .json({ success: true, massage: "user logged successfully" });
+              .status(200)
+              .json({ success: true, massage: "user logged successfully" });
           } else {
             return res
               .status(400)
               .json({ success: false, massage: "Password is incorrect" });
           }
-        })
+        });
       } else {
         return res
           .status(404)
@@ -56,6 +57,48 @@ app.post("/user/login", async (req, res, next) => {
     res.status(505).json({ massage: error, success: false });
   }
 });
+
+app.post("/user/post-expense", async (req, res, next) => {
+  try {
+    const expense = req.body.expense;
+  const descreption = req.body.descreption;
+  const catagory = req.body.catagory;
+  console.log(expense, descreption, catagory);
+ const expenseDetail =  await Expense.create({
+    expense: expense,
+    descreption: descreption,
+    catagory: catagory,
+  });
+  res.status(200).json({expenseDetail:expenseDetail})
+  } catch (err) {
+    res.status(404).json({err:err})
+  }
+  
+});
+
+app.get('/user/get-expense',async(req,res,next)=>{
+  try {
+    const allExpense = await Expense.findAll()
+  res.json({expense:allExpense})
+  } catch (error) {
+    console.log(error)
+    res.status(404).json({error:error})
+  }
+  
+})
+
+app.delete('user/delete-expense/:id',async(req,res,next)=>{
+  console.log(req.params);
+  try {
+      console.log(req.params);
+      const id = req.params.id;
+      const product = await Expense.destroy({ where: { id: id } });
+      res.json(product)
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message });
+    }
+})
 
 sequelize
   .sync()

@@ -1,51 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Sign Up Form</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
   </head>
   <body>
-    <form onsubmit="saveToCrudCrud(event)" action="/user/signup" method="post">
-      <div>
-        <label for="username">username:</label>
-        <input type="text" id="username" name="username" required>
-      </div>
-      <div>
-        <label for="email">email:</label>
-        <input type="email" id="email" name="email" required>
-      </div>
-      <div>
-        <label for="password">password:</label>
-        <input type="password" id="password" name="password" required>
-      </div>
-      <div>
-        <button type="submit">Sign Up</button>
-      </div>
+    
+    <form id="expense-form" onsubmit="saveToBackend(event)">
+      <label for="expense">Choose Expense</label>
+      <input type="text" id="expense" name="expense" class="expense" />
+      <label for="descreption">descreption</label>
+      <input
+        type="text"
+        id="descreption"
+        name="descreption"
+        class="descreption"
+      />
+      <label>Catagory</label>
+      <select class="catagory" id="catagory" name="catagory">
+        <option>Movie</option>
+        <option>snacks</option>
+        <option>Hospital</option>
+        <option>Day-to-Day</option>
+      </select>
+
+      <button type="submit">Add Expense</button>
     </form>
-    <a href="login.html">existing user - login</a>
+    <ul id="listOfProduct"></ul>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
   <script>
-async function saveToCrudCrud(event){
-    try {
-        event.preventDefault();
-        console.log(event.target.email.value)
+    async function saveToBackend(e) {
+      e.preventDefault();
+      const expenseDetail = {
+        expense: e.target.expense.value,
+        descreption: e.target.descreption.value,
+        catagory: e.target.catagory.value,
+      };
 
-        const signupDetails = {
-            username : event.target.username.value,
-            email: event.target.email.value,
-            password:event.target.password.value
-        }
-        console.log(signupDetails)
-        const response = await axios.post('http://localhost:3501/user/signup', signupDetails)
-        if(response.status === 201){
-            window.location.href = 'login.html'
-        }else{
-            throw new Error('failed to login')
-        }
-    } catch (error) {
-        console.log(error)
+      console.log(expense, descreption, catagory);
+      await axios.post("http://localhost:3501/user/post-expense", expenseDetail);
+      console.log('expensedetail--->',expenseDetail);
+     
     }
- }
+
+    window.addEventListener("DOMContentLoaded",()=>{
+        axios.get("http://localhost:3501/user/get-expense")
+        .then((response)=>{
+            console.log(response.data.expense[0])
+            for (var i = 0; i < response.data.expense.length; i++) {
+              showNewProductOnScreen(response.data.expense[i]);
+            }
+            showNewProductOnScreen(response.data.expense[i])
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+
+
+        function showNewProductOnScreen(product) {
+        document.getElementById("expense").value = "";
+        document.getElementById("descreption").value = "";
+
+        const parentNode = document.getElementById("listOfProduct");
+        const childHTML = `<li id=${product.id}>${product.expense}-${product.descreption}
+                               <button onclick="deleteproduct('${product.id}')">Delete Product</button>
+                               <button onclick="editproduct('${product.id}','${product.expense}','${product.descreption}')">Edit Product</button>
+                               </li>`;
+        console.log('child--->',childHTML)
+
+        parentNode.innerHTML = parentNode.innerHTML + childHTML;
+      }
+    })
+
+    function deleteproduct(productId) {
+axios.delete(`http://localhost:3501/user/delete-expense/${productId}`).then((response) => {
+            removeProductFromScreen(productId);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+
+      function removeProductFromScreen(productId) {
+        const parentNode = document.getElementById("listOfProduct");
+        const childNodeToBeDeleted = document.getElementById(productId);
+        if (childNodeToBeDeleted) {
+          parentNode.removeChild(childNodeToBeDeleted);
+        }
+      }
   </script>
 </html>
