@@ -10,6 +10,8 @@ app.use(bodyparser.json());
 const cors = require("cors");
 app.use(cors());
 const Expense = require("./model/Expense");
+const jwt = require('jsonwebtoken');
+const userAuthentication  =  require('./middleware/auth')
 
 app.post("/user/signup", async (req, res, next) => {
   try {
@@ -31,6 +33,10 @@ app.post("/user/signup", async (req, res, next) => {
   }
 });
 
+function generateAccessToken(id,username){
+  return jwt.sign({userId:id, username:username},'jksjdfjkdkgjfljg5412154sghjshjvc556dfdjjv')
+}
+
 app.post("/user/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -40,7 +46,7 @@ app.post("/user/login", async (req, res, next) => {
           if (!err) {
             res
               .status(200)
-              .json({ success: true, massage: "user logged successfully" });
+              .json({ success: true, massage: "user logged successfully",token:generateAccessToken(user[0].id,user[0].username) });
           } else {
             return res
               .status(400)
@@ -58,7 +64,7 @@ app.post("/user/login", async (req, res, next) => {
   }
 });
 
-app.post("/user/post-expense", async (req, res, next) => {
+app.post("/user/post-expense",userAuthentication, async (req, res, next) => {
   try {
     const expense = req.body.expense;
   const descreption = req.body.descreption;
@@ -68,6 +74,7 @@ app.post("/user/post-expense", async (req, res, next) => {
     expense: expense,
     descreption: descreption,
     catagory: catagory,
+    userId:req.user.id
   });
   res.status(200).json({expenseDetail:expenseDetail})
   } catch (err) {
@@ -76,9 +83,9 @@ app.post("/user/post-expense", async (req, res, next) => {
   
 });
 
-app.get('/user/get-expense',async(req,res,next)=>{
+app.get('/user/get-expense',userAuthentication,async(req,res,next)=>{
   try {
-    const allExpense = await Expense.findAll()
+    const allExpense = await Expense.findAll({where:{userId:req.user.id}})
   res.json({expense:allExpense})
   } catch (error) {
     console.log(error)
@@ -87,18 +94,27 @@ app.get('/user/get-expense',async(req,res,next)=>{
   
 })
 
-app.delete('user/delete-expense/:id',async(req,res,next)=>{
+app.delete('/user/delete-expense/:id',userAuthentication,async(req,res,next)=>{
   console.log(req.params);
   try {
       console.log(req.params);
       const id = req.params.id;
-      const product = await Expense.destroy({ where: { id: id } });
-      res.json(product)
+      const product = await Expense.destroy({ where: { id: id,userId:req.user.id} }).then(noofrow=>{
+        if(noofrow===0){
+          return res.status(404).json({success:false, massage:'expense belongs to other user'})
+        }
+        res.json(product)
+      })
+      
+      
     } catch (err) {
       console.log(err);
       res.status(500).json({ error: err.message });
     }
 })
+
+User.hasMany(Expense)
+Expense.belongsTo(User)
 
 sequelize
   .sync()

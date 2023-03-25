@@ -41,13 +41,15 @@
       };
 
       console.log(expense, descreption, catagory);
-      await axios.post("http://localhost:3501/user/post-expense", expenseDetail);
+      const token = localStorage.getItem('token')
+      await axios.post("http://localhost:3501/user/post-expense", expenseDetail,{headers:{"Authorization":token}});
       console.log('expensedetail--->',expenseDetail);
      
     }
 
     window.addEventListener("DOMContentLoaded",()=>{
-        axios.get("http://localhost:3501/user/get-expense")
+      const token = localStorage.getItem('token')
+        axios.get("http://localhost:3501/user/get-expense",{headers:{"Authorization":token}})
         .then((response)=>{
             console.log(response.data.expense[0])
             for (var i = 0; i < response.data.expense.length; i++) {
@@ -76,7 +78,8 @@
     })
 
     function deleteproduct(productId) {
-axios.delete(`http://localhost:3501/user/delete-expense/${productId}`).then((response) => {
+      const token = localStorage.getItem('token')
+      axios.delete(`http://localhost:3501/user/delete-expense/${productId}`,{headers:{"Authorization":token}}).then((response) => {
             removeProductFromScreen(productId);
           })
           .catch((err) => {
