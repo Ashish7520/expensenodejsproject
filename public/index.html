@@ -102,9 +102,9 @@ function showPremiumUserMassage(){
         document.getElementById("descreption").value = "";
 
         const parentNode = document.getElementById("listOfProduct");
-        const childHTML = `<li id=${product.id}>${product.expense}-${product.descreption}
+        const childHTML = `<li id=${product.id}>${product.expense}-${product.descreption}-${product.catagory}
                                <button onclick="deleteproduct('${product.id}')">Delete Product</button>
-                               <button onclick="editproduct('${product.id}','${product.expense}','${product.descreption}')">Edit Product</button>
+                      
                                </li>`;
         parentNode.innerHTML = parentNode.innerHTML + childHTML;
       }
