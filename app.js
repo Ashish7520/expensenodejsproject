@@ -37,8 +37,8 @@ app.post("/user/signup", async (req, res, next) => {
   }
 });
 
-function generateAccessToken(id,username){
-  return jwt.sign({userId:id, username:username},'jksjdfjkdkgjfljg5412154sghjshjvc556dfdjjv')
+function generateAccessToken(id,username, isPremiumUser){
+  return jwt.sign({userId:id, username:username, isPremiumUser},'jksjdfjkdkgjfljg5412154sghjshjvc556dfdjjv')
 }
 
 app.post("/user/login", async (req, res, next) => {
@@ -50,7 +50,7 @@ app.post("/user/login", async (req, res, next) => {
           if (!err) {
             res
               .status(200)
-              .json({ success: true, massage: "user logged successfully",token:generateAccessToken(user[0].id,user[0].username) });
+              .json({ success: true, massage: "user logged successfully",token:generateAccessToken(user[0].id,user[0].username,user[0].isPremiumUser)});
           } else {
             return res
               .status(400)
@@ -152,11 +152,6 @@ app.post('/purchase/updatetransactionstatus',userAuthentication, async(req,res,n
   try {
     const {payment_id , order_id} = req.body
     console.log('reqatpost------>>>>>',req.body)
-    if(orderid == order_id && paymentid == null){
-      const order = await Order.findOne({where:{orderid:order_id}})
-      await order.update({status:'failed'})
-      return res.status(202).json({success:false, massage:'transaction unsuccessful'})
-    }
    const order = await Order.findOne({where:{orderid:order_id}})
     const promise1 = order.update({paymentid:payment_id,status:'successful'})
     const promise2 =  req.user.update({isPremiumUser:true})
@@ -169,6 +164,15 @@ app.post('/purchase/updatetransactionstatus',userAuthentication, async(req,res,n
       } catch (err) {
     throw new Error(err)
   }
+})
+
+app.get('/purchase/get-leaderboard', async(req,res,next)=>{
+  const expenses = await Expense.findAll()
+  console.log('expenses--------->>>>>>>>>', expenses)
+  for(var i=0; i<expenses.length; i++){
+    var abc = expenses[i]
+  }
+  console.log('abc---->',abc)
 })
 
 User.hasMany(Expense)
