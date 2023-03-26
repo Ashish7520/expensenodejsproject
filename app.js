@@ -11,7 +11,11 @@ const cors = require("cors");
 app.use(cors());
 const Expense = require("./model/Expense");
 const jwt = require('jsonwebtoken');
-const userAuthentication  =  require('./middleware/auth')
+const userAuthentication  =  require('./middleware/auth');
+const Razorpay = require('razorpay');
+const Order = require('./model/order');
+const { error } = require("console");
+require('dotenv').config();
 
 app.post("/user/signup", async (req, res, next) => {
   try {
@@ -97,7 +101,7 @@ app.get('/user/get-expense',userAuthentication,async(req,res,next)=>{
 app.delete('/user/delete-expense/:id',userAuthentication,async(req,res,next)=>{
   console.log(req.params);
   try {
-      console.log(req.params);
+      //console.log(req.params);
       const id = req.params.id;
       const product = await Expense.destroy({ where: { id: id,userId:req.user.id} }).then(noofrow=>{
         if(noofrow===0){
@@ -113,8 +117,65 @@ app.delete('/user/delete-expense/:id',userAuthentication,async(req,res,next)=>{
     }
 })
 
+
+
+app.get('/purchase/premiummembership',userAuthentication, async(req,res,next)=>{
+     try {
+      var rzp = new Razorpay({
+        key_id : process.env.RAZORPAY_KEY_ID,
+        key_secret:process.env.RAZORPAY_KEY_SECRET
+      })
+
+
+      const amount = 2500;
+      
+      
+      rzp.orders.create({"amount":amount,"currency":"INR"},(err,order)=>{
+        if(err){
+          throw new Error(JSON.stringify(err))
+        }
+        req.user.createOrder({orderid:order.id,status:'PENDING'}).then(()=>{
+          return res.status(201).json({order, key_id: rzp.key_id})
+        })
+        .catch(err=>{
+          throw new Error(err)
+        })
+      })
+     } catch (err) {
+      console.log(err)
+      res.status(403).json({massage:'something went wrong', error:err})
+      
+     }
+})
+
+app.post('/purchase/updatetransactionstatus',userAuthentication, async(req,res,next)=>{
+  try {
+    const {payment_id , order_id} = req.body
+    console.log('reqatpost------>>>>>',req.body)
+    if(orderid == order_id && paymentid == null){
+      const order = await Order.findOne({where:{orderid:order_id}})
+      await order.update({status:'failed'})
+      return res.status(202).json({success:false, massage:'transaction unsuccessful'})
+    }
+   const order = await Order.findOne({where:{orderid:order_id}})
+    const promise1 = order.update({paymentid:payment_id,status:'successful'})
+    const promise2 =  req.user.update({isPremiumUser:true})
+    Promise.all([promise1,promise2]).then(()=>{
+      return res.status(202).json({success:true, massage:'transaction successful'})
+    }).catch(err=>{
+      throw new Error(err)
+    })
+
+      } catch (err) {
+    throw new Error(err)
+  }
+})
+
 User.hasMany(Expense)
 Expense.belongsTo(User)
+
+User.hasMany(Order)
+Order.belongsTo(User)
 
 sequelize
   .sync()
