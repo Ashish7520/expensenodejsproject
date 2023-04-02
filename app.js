@@ -33,35 +33,9 @@ const jwt = require('jsonwebtoken')
 
 app.get('/purchase/get-leaderboard', async(req,res,next)=>{
   try {
-    const leaderboardOfUsers =await User.findAll({
-      attributes : ['id','username',[sequelize.fn('sum', sequelize.col('expense')), 'total_cost']],
-      include:[{
-        model:Expense,
-        attributes:[]
-      }],
-      group:['user.id'],
-      order:[['total_cost','DESC']]
+    const leaderboardOfUsers =await User.findAll({ 
+      order:[['totalExpenses','DESC']]
     })
-    // const expenses =await Expense.findAll({
-    //   attributes: ['userId',[sequelize.fn('sum', sequelize.col('expense')), 'total_cost']],
-    //   group:['userId']
-
-    //       })
-    // const userAggregatedExpenses = {}
-    // expenses.forEach((expenseAmount) => {
-    //   if(userAggregatedExpenses[expenseAmount.userId] ){
-    //     userAggregatedExpenses[expenseAmount.userId] = userAggregatedExpenses[expenseAmount.userId] + expenseAmount.expense
-    //   }else{
-    //     userAggregatedExpenses[expenseAmount.userId] = expenseAmount.expense
-    //   }
-      
-    // });
-    // var userLeaderBoardDetails = []
-    // users.forEach((user)=>{
-    //   userLeaderBoardDetails.push({name:user.username, total_cost:userAggregatedExpenses[user.id]||0})
-    // })
-    // console.log("userAggregatedExpenses",userLeaderBoardDetails)
-    // userLeaderBoardDetails.sort((a,b)=> b.total_cost - a.total_cost)
     res.status(200).json(leaderboardOfUsers)
   } catch (err) {
     console.log(err)
