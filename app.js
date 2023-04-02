@@ -1,6 +1,7 @@
 const http = require("http");
 const Sequelize = require('sequelize')
 const Sib = require('sib-api-v3-sdk')
+const Forgotpassword = require('./model/forgotPassword');
 
 
 const express = require("express");
@@ -23,6 +24,7 @@ const User = require("./model/User");
 const Expense = require("./model/Expense");
 const Order = require('./model/order');
 const userAuthantication = require('./middleware/auth')
+const resetPasswordRoutes = require('./routes/resetpassword')
 
 const userRoutes = require('./routes/user')
 app.use('/user',userRoutes)
@@ -35,32 +37,31 @@ app.use('/purchase', purchaseRoutes)
 
 const jwt = require('jsonwebtoken')
 
-app.post('/password/forgotpassword', (req,res,next)=>{
-  const email = req.body;
-  console.log(email);
-  // const client = Sib.ApiClient.instance;
-  // const apiKey = client.authentications['api-key'];
-  // apiKey.apiKey = process.env.API_KEY;
+// app.post('/password/forgotpassword', (req,res,next)=>{
+
+//   const client = Sib.ApiClient.instance;
+//   const apiKey = client.authentications['api-key'];
+//   apiKey.apiKey = process.env.API_KEY;
   
-  // const transEmailApi = new Sib.TransactionalEmailsApi();
-  // const sender = {
-  //   email: 'ashishnandwana2@gmail.com'
-  // };
+//   const transEmailApi = new Sib.TransactionalEmailsApi();
+//   const sender = {
+//     email: 'ashishnandwana2@gmail.com'
+//   };
   
-  // const receivers = [
-  //   {
-  //     email: 'ashishnandvana123@gmail.com'
-  //   }
-  // ];
+//   const receivers = [
+//     {
+//       email: 'ashishnandvana123@gmail.com'
+//     }
+//   ];
   
-  // transEmailApi.sendTransacEmail({
-  //   sender,
-  //   to: receivers,
-  //   subject: 'Forgot your password, do not worry',
-  //   textContent: 'hello from forgot password'
-  // }).then(console.log)
-  // .catch(console.log);
-})
+//   transEmailApi.sendTransacEmail({
+//     sender,
+//     to: receivers,
+//     subject: 'Forgot your password, do not worry',
+//     textContent: 'hello from forgot password'
+//   }).then(console.log)
+//   .catch(console.log);
+// })
 
 app.get('/purchase/get-leaderboard', async(req,res,next)=>{
   try {
@@ -74,11 +75,16 @@ app.get('/purchase/get-leaderboard', async(req,res,next)=>{
   }
 })
 
+app.use('/password', resetPasswordRoutes);
+
 User.hasMany(Expense)
 Expense.belongsTo(User)
 
 User.hasMany(Order)
 Order.belongsTo(User)
+
+User.hasMany(Forgotpassword);
+Forgotpassword.belongsTo(User);
 
 sequelize
   .sync()
