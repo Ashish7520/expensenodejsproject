@@ -13,7 +13,9 @@
         <input type="email" id="email" name="email" required/><br>
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required/>
-        <button type="submit">Login</button>
+        <button type="submit">Login</button> <br>
+        <button type="submit", onclick="send(event)">Forgot Password</button>
+
     </form>
     <a href="signup.html">New User - SignUp</a>
 </body>
@@ -37,6 +39,11 @@
             console.log(JSON.stringify(error))
             document.body.innerHTML += `<div style="color: red">${error.message}</div>`;
         })
+    }
+
+    function send(e){
+        window.location.href = 'forgot-password.html'
+
     }
 </script>
 </html>
