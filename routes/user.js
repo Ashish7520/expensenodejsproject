@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const authentications = require('../middleware/auth')
 
 
-const userController = require('../controller/user')
+const userController = require('../controller/user') 
 
 router.post('/signup', userController.signup)
 

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Ashish7520/expensenodejsproject#readme",
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
+    "aws-sdk": "^2.1359.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
