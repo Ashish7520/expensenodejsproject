@@ -28,6 +28,7 @@
       <button type="submit">Add Expense</button>
     </form>
     <button id="rzp-button1">Buy Premium</button>
+    <button onclick="download()" id="downloadexpense">Download File</button>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <ul id="listOfProduct"></ul>
     <ul id="premiumMasssage" style="color: blue;" ></ul>
@@ -183,5 +184,24 @@ function showPremiumUserMassage(){
         alert("something went wrong");
       });
     };
+    function download(){
+    axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
+    .then((response) => {
+        if(response.status === 201){
+            //the bcakend is essentially sending a download link
+            //  which if we open in browser, the file would download
+            var a = document.createElement("a");
+            a.href = response.data.fileUrl;
+            a.download = 'myexpense.csv';
+            a.click();
+        } else {
+            throw new Error(response.data.message)
+        }
+
+    })
+    .catch((err) => {
+        showError(err)
+    });
+}
   </script>
 </html>
