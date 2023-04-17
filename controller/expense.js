@@ -2,6 +2,8 @@ const Expense = require('../model/Expense');
 const User = require('../model/User');
 const sequelize = require('../util/database')
 const AWS = require('aws-sdk')
+const jwt = require('jsonwebtoken')
+const PRODUCTS_PER_PAGE = 3 
 
 
  function uploadToS3(data,fileName){
@@ -81,13 +83,30 @@ const postExpense = async (req, res, next) => {
 
 const getExpense = async (req,res,next) => {
     try {
-        const allExpense = await Expense.findAll({where:{userId:req.user.id}})
-        res.json({expense:allExpense})
+        const page = parseInt(req.query.page) || 1;
+        const totalItems = await Expense.count({
+            where: { userId: req.user.id }
+          });
+        const allExpense = await Expense.findAll({
+            where:{userId:req.user.id},
+            offset: (page-1)*PRODUCTS_PER_PAGE,
+            limit:PRODUCTS_PER_PAGE
+        })
+        res.json({
+            expense:allExpense,
+            currentPage: page,
+            hasNextPage:PRODUCTS_PER_PAGE*page<totalItems,
+            nextPage:page+1,
+            hasPreviousPage:page>1,
+            previousPage:page-1,
+            lastPage:Math.ceil(totalItems/PRODUCTS_PER_PAGE)
+        })
     } catch (error) {
         console.log(error)
         res.status(404).json({error:error})
     }
 };
+
 
 const deleteExpense = async (req, res, next) => {
     console.log(req.params);

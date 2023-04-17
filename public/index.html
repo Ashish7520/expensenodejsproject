@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -32,6 +32,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <ul id="listOfProduct"></ul>
     <ul id="premiumMasssage" style="color: blue;" ></ul>
+    <ul id="pagination"></ul>
 
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
@@ -52,6 +53,7 @@
         { headers: { Authorization: token } }
       );
       console.log("expensedetail--->", expenseDetail);
+      showNewProductOnScreen(expenseDetail);
     }
 
     function parseJwt (token) {
@@ -91,15 +93,19 @@ function showPremiumUserMassage(){
 }
 
     window.addEventListener("DOMContentLoaded", () => {
+      
+      const objUrlParams = new URLSearchParams(window.location.search)
+    const page = objUrlParams.get('page')||1
       const token = localStorage.getItem("token");
       const decodedToken = parseJwt(token)
       const isPremiumUser = decodedToken.isPremiumUser
+      
       if(isPremiumUser){
          showPremiumUserMassage()
          showLeaderboard()
       }
       axios
-        .get("http://localhost:3501/user/get-expense", {
+        .get(`http://localhost:3501/user/get-expense?page=${page}`, {
           headers: { Authorization: token },
         })
         .then((response) => {
@@ -107,13 +113,17 @@ function showPremiumUserMassage(){
           for (var i = 0; i < response.data.expense.length; i++) {
             showNewProductOnScreen(response.data.expense[i]);
           }
+          showPagination(response.data)
           
         })
         .catch((err) => {
           console.log(err);
         });
 
-      function showNewProductOnScreen(product) {
+      
+    });
+
+    function showNewProductOnScreen(product) {
         document.getElementById("expense").value = "";
         document.getElementById("descreption").value = "";
 
@@ -124,7 +134,6 @@ function showPremiumUserMassage(){
                                </li>`;
         parentNode.innerHTML = parentNode.innerHTML + childHTML;
       }
-    });
 
     function deleteproduct(productId) {
       const token = localStorage.getItem("token");
@@ -204,5 +213,47 @@ function showPremiumUserMassage(){
         showError(err)
     });
 }
+
+function showPagination({
+    currentPage,
+    hasNextPage,
+    nextPage,
+    hasPreviousPage,
+    previousPage,
+    lastPage
+}){
+    pagination.innerHTML=''
+    for(let i=1; i<=lastPage; i++){
+        const btn = document.createElement('button')
+        btn.innerHTML= i;
+        btn.addEventListener('click',()=>getProducts(i))
+        if(i == currentPage){
+            btn.disabled = true;
+            btn.classList.add("active");
+        }
+        pagination.appendChild(btn)
+    }
+}
+
+
+function getProducts(page){
+  const token = localStorage.getItem("token");
+  document.getElementById("listOfProduct").innerHTML = "";
+    axios.get(`http://localhost:3501/user/get-expense?page=${page}`,{
+          headers: { Authorization: token },
+        })
+    .then((response)=>{
+      for (var i = 0; i < response.data.expense.length; i++) {
+            showNewProductOnScreen(response.data.expense[i]);
+          }
+       showPagination(response.data)
+
+    })
+    .catch(err=>{
+        console.log(err)
+    })
+
+
+} 
   </script>
 </html>
