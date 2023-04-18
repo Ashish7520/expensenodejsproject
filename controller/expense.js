@@ -7,18 +7,18 @@ const PRODUCTS_PER_PAGE = 3
 
 
  function uploadToS3(data,fileName){
-   const BUCKET_NAME = 'expensetrackingapp007'
-   const IAM_USER_KEY = 'AKIATFVG4AANBVFGTXVN'
-   const IAM_USER_SECRET = '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'
+   const bucketName = process.env.BUCKET_NAME   //'expensetrackingapp007'
+   const userKey = process.env.IAM_USER_KEY //'AKIATFVG4AANBVFGTXVN'
+   const userSecretKey = process.env.IAM_USER_SECRET //'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'
 
    let s3bucket =  new AWS.S3({
-    accessKeyId : IAM_USER_KEY,
-    secretAccessKey: IAM_USER_SECRET
+    accessKeyId : userKey,
+    secretAccessKey: userSecretKey
    })
 
   
     var params={
-        Bucket:BUCKET_NAME,
+        Bucket:bucketName,
         Key:fileName,
         Body:data,
         ACL : 'public-read'
@@ -83,7 +83,7 @@ const postExpense = async (req, res, next) => {
 
 const getExpense = async (req,res,next) => {
     try {
-        const page = parseInt(req.query.page) || 1;
+        const page = req.query.page || 1;
         const totalItems = await Expense.count({
             where: { userId: req.user.id }
           });
@@ -92,21 +92,19 @@ const getExpense = async (req,res,next) => {
             offset: (page-1)*PRODUCTS_PER_PAGE,
             limit:PRODUCTS_PER_PAGE
         })
-        res.json({
-            expense:allExpense,
-            currentPage: page,
-            hasNextPage:PRODUCTS_PER_PAGE*page<totalItems,
-            nextPage:page+1,
-            hasPreviousPage:page>1,
-            previousPage:page-1,
-            lastPage:Math.ceil(totalItems/PRODUCTS_PER_PAGE)
-        })
+        res.json({expense:allExpense,
+        currentPage: page,
+        hasNextPage:PRODUCTS_PER_PAGE*page<totalItems,
+        nextPage:page+1,
+        hasPreviousPage:page>1,
+        previousPage:page-1,
+        lastPage:Math.ceil(totalItems/PRODUCTS_PER_PAGE)
+    })
     } catch (error) {
         console.log(error)
         res.status(404).json({error:error})
     }
 };
-
 
 const deleteExpense = async (req, res, next) => {
     console.log(req.params);

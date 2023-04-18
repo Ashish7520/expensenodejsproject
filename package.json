@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "cross-env NODE_ENV=production RAZORPAY_KEY_ID=rzp_test_mWyOBVgRaQiZy4 RAZORPAY_KEY_SECRET=53CylwTUT61MpblKL8A4usmD API_KEY=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 BUCKET_NAME=expensetrackingapp007 IAM_USER_KEY=AKIATFVG4AANBVFGTXVN IAM_USER_SECRET=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 node app.js",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -21,14 +22,20 @@
     "aws-sdk": "^2.1359.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "helmet": "^6.1.5",
     "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
     "mysql2": "^3.2.0",
     "razorpay": "^2.8.6",
     "sequelize": "^6.29.3",
     "sib-api-v3-sdk": "^8.5.0"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
 }

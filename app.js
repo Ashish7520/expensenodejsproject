@@ -2,6 +2,11 @@ const http = require("http");
 const Sequelize = require('sequelize')
 const Sib = require('sib-api-v3-sdk')
 const Forgotpassword = require('./model/forgotPassword');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
+const fs= require('fs')
+const path = require('path')
 
 
 const express = require("express");
@@ -25,6 +30,13 @@ const Expense = require("./model/Expense");
 const Order = require('./model/order');
 const userAuthantication = require('./middleware/auth')
 const resetPasswordRoutes = require('./routes/resetpassword')
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname,"access.log"),{flags:'a'})
+
+app.use(helmet())
+app.use(compression())
+app.use(morgan('combined',{stream:accessLogStream}))
+
 
 const userRoutes = require('./routes/user')
 app.use('/user',userRoutes)
@@ -86,10 +98,12 @@ Order.belongsTo(User)
 User.hasMany(Forgotpassword);
 Forgotpassword.belongsTo(User);
 
+console.log(process.env.NODE_ENV)
+
 sequelize
   .sync()
   .then((result) => {
-    app.listen(3501);
+    app.listen(process.env.PORT || 3501);
   })
   .catch((err) => {
     console.log(err);
